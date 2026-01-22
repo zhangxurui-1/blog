@@ -3,16 +3,16 @@ package flag
 import (
 	"errors"
 	"fmt"
-	"github.com/urfave/cli"
-	"go.uber.org/zap"
 	"os"
 	"server/global"
+
+	"github.com/urfave/cli"
+	"go.uber.org/zap"
 )
 
-// 定义 CLI 标志，用于不同操作的命令行选项
 var (
-	sqlFlag = &cli.BoolFlag{
-		Name:  "sql",
+	initDBTableFlag = &cli.BoolFlag{
+		Name:  "init-db-table",
 		Usage: "Initialize the structure of MySQL database table.",
 	}
 	sqlExportFlag = &cli.BoolFlag{
@@ -23,8 +23,8 @@ var (
 		Name:  "sql-import",
 		Usage: "Import SQL data from a specified file.",
 	}
-	esFlag = &cli.BoolFlag{
-		Name:  "es",
+	initESIndexFlag = &cli.BoolFlag{
+		Name:  "init-es-index",
 		Usage: "Initialize the Elasticsearch index.",
 	}
 	esExportFlag = &cli.BoolFlag{
@@ -53,7 +53,7 @@ func Run(c *cli.Context) {
 
 	// 根据不同的标志选择执行的操作
 	switch {
-	case c.Bool(sqlFlag.Name):
+	case c.Bool(initDBTableFlag.Name):
 		if err := SQL(); err != nil {
 			global.Log.Error("Failed to initialize table structure:", zap.Error(err))
 			return
@@ -77,7 +77,7 @@ func Run(c *cli.Context) {
 		} else {
 			global.Log.Info("Successfully import SQL data")
 		}
-	case c.Bool(esFlag.Name):
+	case c.Bool(initESIndexFlag.Name):
 		if err := Elasticsearch(); err != nil {
 			global.Log.Error("Failed to create ES index:", zap.Error(err))
 		} else {
@@ -113,10 +113,10 @@ func NewApp() *cli.App {
 	app := cli.NewApp()
 	app.Name = "Go blog"
 	app.Flags = []cli.Flag{
-		sqlFlag,
+		initDBTableFlag,
 		sqlExportFlag,
 		sqlImportFlag,
-		esFlag,
+		initESIndexFlag,
 		esExportFlag,
 		esImportFlag,
 		adminFlag,
@@ -126,8 +126,8 @@ func NewApp() *cli.App {
 	return app
 }
 
-// InitFlag 初始化并运行 CLI 应用程序
-func InitFlag() {
+// ParseCommandLine parses command-line arguments and executes the corresponding actions
+func ParseCommandLine() {
 	if len(os.Args) > 1 {
 		app := NewApp()
 		if err := app.Run(os.Args); err != nil {

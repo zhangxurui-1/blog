@@ -1,12 +1,13 @@
 package initialize
 
 import (
+	"os"
+	"server/global"
+
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"os"
-	"server/global"
 )
 
 // InitGorm 初始化数据库连接

@@ -1,11 +1,12 @@
 package service
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"server/global"
 	"server/utils"
 	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 type BaseService struct{}
@@ -39,6 +40,5 @@ func (baseService *BaseService) SendEmailVerificationCode(c *gin.Context, to str
 祝好，<br/>` +
 		global.Config.Website.Title + `<br/>
 <br/>`
-	_ = utils.Email(to, subject, body)
-	return nil
+	return utils.Email(to, subject, body)
 }

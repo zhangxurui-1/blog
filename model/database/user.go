@@ -1,9 +1,10 @@
 package database
 
 import (
-	"github.com/gofrs/uuid"
 	"server/global"
 	"server/model/appTypes"
+
+	"github.com/gofrs/uuid"
 )
 
 type User struct {
@@ -15,7 +16,7 @@ type User struct {
 	Openid    string            `json:"openid"`
 	Avatar    string            `json:"avatar" gorm:"size:255"`
 	Address   string            `json:"address"`
-	Signature string            `json:"signature" gorm:"default:'低调的man'"`
+	Signature string            `json:"signature" gorm:"default:'default signature'"`
 	RoleID    appTypes.RoleID   `json:"role_id"`  // 用户角色
 	Register  appTypes.Register `json:"register"` // 用户的注册类型（邮箱/QQ）
 	Freeze    bool              `json:"freeze"`   // 是否被冻结

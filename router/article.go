@@ -1,8 +1,9 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/api"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ArticleRouter 文章路由
@@ -26,11 +27,11 @@ func (a *ArticleRouter) InitArticleRouter(Router *gin.RouterGroup, PublicGroup *
 		articlePublicRouter.GET("search", articleApi.ArticleSearch)
 		articlePublicRouter.GET("category", articleApi.ArticleCategory)
 		articlePublicRouter.GET("tags", articleApi.ArticleTags)
+		articlePublicRouter.GET("list", articleApi.ArticleList)
 	}
 	{
 		articleAdminRouter.POST("create", articleApi.ArticleCreate)
 		articleAdminRouter.DELETE("delete", articleApi.ArticleDelete)
 		articleAdminRouter.PUT("update", articleApi.ArticleUpdate)
-		articleAdminRouter.GET("list", articleApi.ArticleList)
 	}
 }

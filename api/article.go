@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"server/global"
 	"server/model/request"
 	"server/model/response"
 	"server/utils"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type ArticleApi struct {
@@ -138,7 +139,7 @@ func (articleApi *ArticleApi) ArticleLikesList(c *gin.Context) {
 	}, c)
 }
 
-// ArticleCreate 发布文章
+// ArticleCreate publishes an article
 func (articleApi *ArticleApi) ArticleCreate(c *gin.Context) {
 	var req request.ArticleCreate
 	if err := c.ShouldBindJSON(&req); err != nil {

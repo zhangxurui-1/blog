@@ -3,9 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
-	"gorm.io/gorm"
 	"server/global"
 	"server/model/appTypes"
 	"server/model/database"
@@ -14,24 +11,24 @@ import (
 	"server/model/response"
 	"server/utils"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+	"gorm.io/gorm"
 )
 
 type UserService struct{}
 
 // Register 用户注册
 func (userService *UserService) Register(u database.User) (database.User, error) {
-	// 验证数据库中是否已经有这条记录
 	if !errors.Is(global.DB.Where("email = ?", u.Email).First(&database.User{}).Error, gorm.ErrRecordNotFound) {
 		return database.User{}, errors.New("this email address is already registered, please check the information you filled in")
 	}
-	// 填充对象
+
 	u.Password = utils.BcryptHash(u.Password)
 	u.UUID = uuid.Must(uuid.NewV4())
-	u.Avatar = "/image/avatar.jpg"
-	u.RoleID = appTypes.User
-	u.Register = appTypes.Email
+	u.Avatar = "./image/avatar.jpg"
 
-	// 添加到数据库
 	if err := global.DB.Create(&u).Error; err != nil {
 		return database.User{}, err
 	}

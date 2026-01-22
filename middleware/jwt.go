@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"server/global"
 	"server/model/database"
 	"server/model/request"
@@ -10,6 +9,8 @@ import (
 	"server/service"
 	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 var jwtService = service.ServiceGroupApp.JwtService
@@ -64,7 +65,7 @@ func JWTAuth() gin.HandlerFunc {
 				})
 				newAccessToken, err2 := j.CreateAccessToken(newAccessClaims)
 				if err2 != nil {
-					// 如果生成失败，清除 Refresh Token 并返回未授权错误
+					// 如果生成失败，清除 Refresh Token 并返回错误
 					utils.ClearRefreshToken(c)
 					response.NoAuth("Failed to create access token", c)
 					c.Abort()

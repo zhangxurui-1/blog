@@ -7,7 +7,6 @@ type Article struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 
-	Cover    string   `json:"cover"`   // 文章封面
 	Title    string   `json:"title"`   // 文章标题
 	Keyword  string   `json:"keyword"` // 文章标题-关键字
 	Category string   `json:"category"`

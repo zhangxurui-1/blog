@@ -25,6 +25,7 @@ func LoginRecord() gin.HandlerFunc {
 
 			// 从请求上下文中获取 UserID，确保获取到的是当前请求的正确 UserID
 			if value, exists := c.Get("user_id"); exists {
+				
 				if id, ok := value.(uint); ok {
 					userID = id
 				}

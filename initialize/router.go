@@ -1,13 +1,16 @@
 package initialize
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"server/global"
 	"server/middleware"
 	"server/router"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 )
 
 // InitRouter 初始化路由
@@ -15,6 +18,27 @@ func InitRouter() *gin.Engine {
 	// 设置 gin 模式
 	gin.SetMode(global.Config.System.Env)
 	Router := gin.Default()
+	Router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+		},
+		AllowMethods: []string{
+			"GET", "POST", "PUT", "DELETE", "OPTIONS",
+		},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+		},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	// 使用自定义的日志记录中间件和 recovery 中间件
 	Router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
 

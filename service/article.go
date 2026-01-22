@@ -3,11 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/scriptlanguage"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
-	"gorm.io/gorm"
 	"server/global"
 	"server/model/appTypes"
 	"server/model/database"
@@ -17,6 +12,12 @@ import (
 	"server/utils"
 	"strconv"
 	"time"
+
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/scriptlanguage"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
+	"gorm.io/gorm"
 )
 
 type ArticleService struct{}
@@ -233,7 +234,6 @@ func (articleService *ArticleService) ArticleCreate(req request.ArticleCreate) e
 	articleToCreate := elasticsearch.Article{
 		CreatedAt: now,
 		UpdatedAt: now,
-		Cover:     req.Cover, // 封面是一张图片的 url
 		Title:     req.Title,
 		Keyword:   req.Title,
 		Category:  req.Category,
@@ -251,11 +251,6 @@ func (articleService *ArticleService) ArticleCreate(req request.ArticleCreate) e
 
 		// 更新文章标签表
 		if err := articleService.UpdateTagsCount(tx, []string{}, articleToCreate.Tags); err != nil {
-			return err
-		}
-
-		// 更新封面图片资源所属的类别（更改为 "Cover"）
-		if err := utils.ChangeImagesCategory(tx, []string{articleToCreate.Cover}, appTypes.Cover); err != nil {
 			return err
 		}
 
@@ -296,10 +291,6 @@ func (articleService *ArticleService) ArticleDelete(req request.ArticleDelete) e
 				return err2
 			}
 
-			// 更新封面图片资源所属的类别（更改为 "Null"）
-			if err2 := utils.InitImagesCategory(tx, []string{articleToDelete.Cover}); err2 != nil {
-				return err2
-			}
 			// 更新文章内的插图（插图的类别更改为 "Null"）
 			illustrations, err2 := utils.FindIllustrations(articleToDelete.Content)
 			if err2 != nil {
@@ -328,7 +319,6 @@ func (articleService *ArticleService) ArticleUpdate(req request.ArticleUpdate) e
 	// 使用一个匿名结构体
 	articleToUpdate := struct {
 		UpdatedAt string   `json:"updated_at"`
-		Cover     string   `json:"cover"`   // 文章封面
 		Title     string   `json:"title"`   // 文章标题
 		Keyword   string   `json:"keyword"` // 文章标题-关键字
 		Category  string   `json:"category"`
@@ -337,7 +327,6 @@ func (articleService *ArticleService) ArticleUpdate(req request.ArticleUpdate) e
 		Content   string   `json:"content"`
 	}{
 		UpdatedAt: now,
-		Cover:     req.Cover, // 封面是一张图片的 url
 		Title:     req.Title,
 		Keyword:   req.Title,
 		Category:  req.Category,
@@ -358,15 +347,7 @@ func (articleService *ArticleService) ArticleUpdate(req request.ArticleUpdate) e
 		if err := articleService.UpdateTagsCount(tx, oldArticle.Tags, articleToUpdate.Tags); err != nil {
 			return err
 		}
-		// 更新封面图片资源所属的类别
-		if oldArticle.Cover != articleToUpdate.Cover {
-			if err := utils.InitImagesCategory(tx, []string{oldArticle.Cover}); err != nil {
-				return err
-			}
-			if err := utils.ChangeImagesCategory(tx, []string{articleToUpdate.Cover}, appTypes.Cover); err != nil {
-				return err
-			}
-		}
+
 		// 更新插图资源
 		oldIllustrations, err := utils.FindIllustrations(oldArticle.Content)
 		if err != nil {

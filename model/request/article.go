@@ -26,7 +26,6 @@ type ArticleLikesList struct {
 }
 
 type ArticleCreate struct {
-	Cover    string   `json:"cover" binding:"required"`
 	Title    string   `json:"title" binding:"required"`
 	Category string   `json:"category" binding:"required"`
 	Tags     []string `json:"tags" binding:"required"`

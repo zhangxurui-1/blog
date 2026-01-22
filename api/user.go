@@ -2,20 +2,22 @@ package api
 
 import (
 	"errors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
-	"go.uber.org/zap"
+	"time"
+
 	"server/global"
+	"server/model/appTypes"
 	"server/model/database"
 	"server/model/request"
 	"server/model/response"
 	"server/utils"
-	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
+	"go.uber.org/zap"
 )
 
-type UserApi struct {
-}
+type UserApi struct{}
 
 // Register 用户注册
 func (userApi *UserApi) Register(c *gin.Context) {
@@ -47,7 +49,32 @@ func (userApi *UserApi) Register(c *gin.Context) {
 	}
 
 	// 创建新用户
-	u := database.User{Username: req.Username, Password: req.Password, Email: req.Email}
+	u := database.User{Username: req.Username, Password: req.Password, Email: req.Email, RoleID: appTypes.User, Register: appTypes.Email}
+	user, err := userService.Register(u)
+	if err != nil {
+		global.Log.Error("Failed to register user:", zap.Error(err))
+		response.FailWithMessage("Failed to register user", c)
+		return
+	}
+
+	userApi.TokenNext(c, user)
+}
+
+func (userApi *UserApi) RegisterAdmin(c *gin.Context) {
+	var req request.Register
+	if err := c.ShouldBind(&req); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	u := database.User{
+		Username: req.Username,
+		Password: req.Password,
+		Email:    req.Email,
+		RoleID:   appTypes.Admin,
+		Register: appTypes.Beta,
+	}
+
 	user, err := userService.Register(u)
 	if err != nil {
 		global.Log.Error("Failed to register user:", zap.Error(err))
@@ -83,7 +110,7 @@ func (userApi *UserApi) EmailLogin(c *gin.Context) {
 		user, err := userService.EmailLogin(u)
 		if err != nil {
 			global.Log.Error("Failed to Login:", zap.Error(err))
-			response.FailWithMessage("Failed to Login", c)
+			response.FailWithMessage("Failed to Login: "+err.Error(), c)
 			return
 		}
 
@@ -122,7 +149,7 @@ func (userApi *UserApi) QQLogin(c *gin.Context) {
 	userApi.TokenNext(c, user)
 }
 
-// TokenNext 为用户发放 token
+// TokenNext releases a token to a user
 func (userApi *UserApi) TokenNext(c *gin.Context, user database.User) {
 	// 检查用户是否被冻结
 	if user.Freeze {
@@ -372,7 +399,6 @@ func (userApi *UserApi) UserList(c *gin.Context) {
 	}
 
 	list, total, err := userService.UserList(pageInfo)
-
 	if err != nil {
 		global.Log.Error("Failed to get user list", zap.Error(err))
 		response.FailWithMessage("Failed to get user list", c)

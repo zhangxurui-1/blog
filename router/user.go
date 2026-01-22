@@ -1,9 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/api"
 	"server/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserRouter struct{}
@@ -34,6 +35,7 @@ func (u *UserRouter) InitUserRouter(privateGroup *gin.RouterGroup, publicGroup *
 	{
 		userLoginRouter.POST("register", userApi.Register)
 		userLoginRouter.POST("login", userApi.Login)
+		userLoginRouter.POST("admin_register", userApi.RegisterAdmin)
 	}
 	// 管理员路由
 	{

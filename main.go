@@ -19,7 +19,7 @@ func main() {
 	global.Redis = initialize.ConnectRedis()
 	defer global.Redis.Close()
 	global.ESClient = initialize.ConnectES()
-	flag.InitFlag()
+	flag.ParseCommandLine()
 	initialize.InitCron()
 
 	core.RunServer()
