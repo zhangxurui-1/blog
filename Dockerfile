@@ -5,6 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache git ca-certificates tzdata
 
 COPY go.mod go.sum ./
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.google.cn
 RUN go mod download
 
 COPY . .
