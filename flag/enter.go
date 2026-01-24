@@ -27,6 +27,10 @@ var (
 		Name:  "init-es-index",
 		Usage: "Initialize the Elasticsearch index.",
 	}
+	initESIndexDefaultFlag = &cli.BoolFlag{
+		Name:  "init-es-index-default",
+		Usage: "Initialize the Elasticsearch index with default behavior.",
+	}
 	esExportFlag = &cli.BoolFlag{
 		Name:  "es-export",
 		Usage: "Export ES data to a specified file.",
@@ -83,6 +87,12 @@ func Run(c *cli.Context) {
 		} else {
 			global.Log.Info("Successfully created ES index")
 		}
+	case c.Bool(initESIndexDefaultFlag.Name):
+		if err := ElasticSearchDefault(); err != nil {
+			global.Log.Error("Failed to create ES index:", zap.Error(err))
+		} else {
+			global.Log.Info("Successfully created ES index")
+		}
 	case c.Bool(esExportFlag.Name):
 		if err := ElasticsearchExport(); err != nil {
 			global.Log.Error("Failed to export ES data:", zap.Error(err))
@@ -117,6 +127,7 @@ func NewApp() *cli.App {
 		sqlExportFlag,
 		sqlImportFlag,
 		initESIndexFlag,
+		initESIndexDefaultFlag,
 		esExportFlag,
 		esImportFlag,
 		adminFlag,

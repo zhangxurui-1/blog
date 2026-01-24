@@ -21,9 +21,12 @@ RUN apk add --no-cache ca-certificates tzdata \
     && adduser -D -H appuser
 
 COPY --from=builder /app/server /app/server
+COPY entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
 
 ENV PORT=8080
 EXPOSE 8080
 USER appuser
 
-CMD ["/app/server"]
+ENTRYPOINT ["/app/entrypoint.sh"]

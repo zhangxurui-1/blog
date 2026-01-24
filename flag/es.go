@@ -12,7 +12,7 @@ import (
 func Elasticsearch() error {
 	esService := service.ServiceGroupApp.EsService
 	// 检查索引是否已存在
-	indexExists, err := esService.IndexExists("flag")
+	indexExists, err := esService.IndexExists(elasticsearch.ArticleIndex())
 	if err != nil {
 		return err
 	}
@@ -42,6 +42,23 @@ func Elasticsearch() error {
 			// 递归调用，重新输入
 			return Elasticsearch()
 		}
+	}
+
+	// 创建索引
+	return esService.IndexCreate(elasticsearch.ArticleIndex(), elasticsearch.ArticleMapping())
+}
+
+func ElasticSearchDefault() error {
+	esService := service.ServiceGroupApp.EsService
+	// 检查索引是否已存在
+	indexExists, err := esService.IndexExists(elasticsearch.ArticleIndex())
+	if err != nil {
+		return err
+	}
+	// 如果索引存在，则打印提示信息并询问是否重建索引
+	if indexExists {
+		fmt.Printf("The index %s already exists.\n", elasticsearch.ArticleIndex())
+		return nil
 	}
 
 	// 创建索引
