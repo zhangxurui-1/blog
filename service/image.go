@@ -1,7 +1,6 @@
 package service
 
 import (
-	"gorm.io/gorm"
 	"mime/multipart"
 	"server/global"
 	"server/model/appTypes"
@@ -10,6 +9,8 @@ import (
 	"server/model/request"
 	"server/utils"
 	"server/utils/upload"
+
+	"gorm.io/gorm"
 )
 
 type ImageService struct{}
@@ -79,4 +80,15 @@ func (imageService *ImageService) ImageList(info request.ImageList) (list interf
 	}
 	// 分页查询
 	return utils.MySQLPagination(&database.Image{}, option)
+}
+
+func (imageService *ImageService) ImageUploadCallback(req *request.ImageUploadCallback) (*database.Image, error) {
+	image := &database.Image{
+		Name:     req.Name,
+		URL:      global.Config.Qiniu.ImgPath + req.Key,
+		Category: appTypes.Null,
+		Storage:  appTypes.Qiniu,
+	}
+	err := global.DB.Create(image).Error
+	return image, err
 }

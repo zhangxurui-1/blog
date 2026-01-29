@@ -276,7 +276,12 @@ func (articleService *ArticleService) ArticleDelete(req request.ArticleDelete) e
 
 	// 一个文章的删除会涉及多个表的更新
 	return global.DB.Transaction(func(tx *gorm.DB) error {
+		articleView := articleService.NewArticleView()
+
 		for _, id := range req.IDs {
+			if err := articleView.Delete(id); err != nil {
+				return err
+			}
 			// 查询该文章
 			articleToDelete, err := articleService.Get(id)
 			if err != nil {
@@ -308,6 +313,7 @@ func (articleService *ArticleService) ArticleDelete(req request.ArticleDelete) e
 				}
 			}
 		}
+
 		// 删除文章
 		return articleService.Delete(req.IDs)
 	})

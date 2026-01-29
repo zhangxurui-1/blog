@@ -22,6 +22,7 @@ var WhiteImageList = map[string]struct{}{
 type OSS interface {
 	UploadImage(file *multipart.FileHeader) (string, string, error)
 	DeleteImage(key string) error
+	NewUpToken() (string, error)
 }
 
 // NewOss 实例化 OSS

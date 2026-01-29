@@ -2,12 +2,13 @@ package task
 
 import (
 	"context"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/scriptlanguage"
 	"server/global"
 	"server/model/elasticsearch"
 	"server/service"
 	"strconv"
+
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/scriptlanguage"
 )
 
 // UpdateArticleViewsSyncTask 同步文章浏览量到 Elasticsearch
@@ -34,5 +35,7 @@ func UpdateArticleViewsSyncTask() error {
 			return err
 		}
 	}
+
+	articleView.Clear()
 	return nil
 }

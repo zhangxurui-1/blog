@@ -66,3 +66,8 @@ func (l *Local) DeleteImage(key string) error {
 	path := global.Config.Upload.Path + "/image/" + key
 	return os.Remove(path)
 }
+
+func (l *Local) NewUpToken() (string, error) {
+	return "", fmt.Errorf(`Current storage mode is local, which does not support upload token,
+	please use /api/image/upload to upload images`)
+}

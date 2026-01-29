@@ -38,3 +38,7 @@ func (c CountDB) GetInfo() map[string]int {
 func (c CountDB) Clear() {
 	global.Redis.Del(c.Index)
 }
+
+func (c CountDB) Delete(id string) error {
+	return global.Redis.HDel(c.Index, id).Err()
+}

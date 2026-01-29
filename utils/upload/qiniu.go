@@ -3,65 +3,22 @@ package upload
 import (
 	"context"
 	"fmt"
+	"mime/multipart"
+	"server/global"
+	"time"
+
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
-	"mime/multipart"
-	"path/filepath"
-	"server/global"
-	"server/utils"
-	"strings"
-	"time"
+	"github.com/qiniu/go-sdk/v7/storagev2/credentials"
+	"github.com/qiniu/go-sdk/v7/storagev2/uptoken"
 )
 
 type Qiniu struct{}
 
 func (q *Qiniu) UploadImage(file *multipart.FileHeader) (string, string, error) {
-	// 检查文件大小
-	size := float64(file.Size) / (1024 * 1024)
-	if size >= float64(global.Config.Upload.Size) {
-		return "", "", fmt.Errorf("the image size exceeds the limitation, current size : %.2f MB, "+
-			"max upload size: %d MB", size, global.Config.Upload.Size)
-	}
-
-	// 提取文件扩展名
-	ext := filepath.Ext(file.Filename)
-	// 提取文件名（把扩展名剔除）
-	name := strings.TrimSuffix(file.Filename, ext)
-	// 禁止上传不符合格式的文件
-	if _, exists := WhiteImageList[ext]; !exists {
-		return "", "", fmt.Errorf("the file extension %s is not allowed", ext)
-	}
-
-	// 上传策略
-	putPolicy := storage.PutPolicy{Scope: global.Config.Qiniu.Bucket}
-
-	mac := qbox.NewMac(global.Config.Qiniu.AccessKey, global.Config.Qiniu.SecretKey)
-	// 生成上传凭证
-	upToken := putPolicy.UploadToken(mac)
-
-	cfg := qiniuConfig()
-	// 构建表单上传对象
-	formUploader := storage.NewFormUploader(cfg)
-	// PutRet 为七牛标准的上传回复内容
-	putRet := storage.PutRet{}
-	// PutExtra 为表单上传的额外可选项
-	putExtra := storage.PutExtra{Params: map[string]string{}}
-
-	fileKey := utils.MD5V([]byte(name)) + "-" + time.Now().Format("20060102150405") + ext
-
-	data, err := file.Open()
-	if err != nil {
-		return "", "", err
-	}
-	defer data.Close()
-
-	// 以表单方式上传一个文件
-	err = formUploader.Put(context.Background(), &putRet, upToken, fileKey, data, file.Size, &putExtra)
-	if err != nil {
-		return "", "", err
-	}
-
-	return global.Config.Qiniu.ImgPath + putRet.Key, putRet.Key, nil
+	return "", "", fmt.Errorf(`Current storage mode is qiniu, which should be done on client side, please 
+	(1) get upload token via /api/image/upload_token
+	(2) upload directly to qiniu cloud with the token`)
 }
 
 // DeleteImage 删除文件
@@ -94,4 +51,31 @@ func qiniuConfig() *storage.Config {
 	}
 
 	return &cfg
+}
+
+func (q *Qiniu) NewUpToken() (string, error) {
+	mac := credentials.NewCredentials(global.Config.Qiniu.AccessKey, global.Config.Qiniu.SecretKey)
+	bucket := global.Config.Qiniu.Bucket
+	putPolicy, err := uptoken.NewPutPolicy(bucket, time.Now().Add(1*time.Hour))
+
+	if err != nil {
+		return "", err
+	}
+
+	putPolicy.SetCallbackUrl(global.Config.System.Domain + "/api/image/upload_callback").
+		SetCallbackBody(`{
+			"key":"${key}",
+			"hash":"${etag}",
+			"fsize":"${fsize}",
+			"bucket":"${bucket}",
+			"name":"${fname}"
+		}`).
+		SetCallbackBodyType("application/json")
+
+	upToken, err := uptoken.NewSigner(putPolicy, mac).GetUpToken(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+	return upToken, nil
 }

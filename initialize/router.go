@@ -70,7 +70,7 @@ func InitRouter() *gin.Engine {
 		routerGroup.InitFeedbackRouter(privateGroup, publicGroup, adminGroup)
 	}
 	{
-		routerGroup.InitImageRouter(adminGroup)
+		routerGroup.InitImageRouter(adminGroup, publicGroup)
 		routerGroup.InitAdvertisementRouter(adminGroup, publicGroup)
 		routerGroup.InitFriendLinkRouter(adminGroup, publicGroup)
 		routerGroup.InitWebsiteRouter(adminGroup, publicGroup)
